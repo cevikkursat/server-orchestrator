@@ -1,0 +1,12 @@
+{
+  "name": "server-panel",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @panel/api --filter @panel/web dev",
+    "build": "pnpm --filter @panel/api --filter @panel/web build",
+    "typecheck": "pnpm -r typecheck",
+    "start": "node apps/api/dist/index.js"
+  },
+  "license": "MIT"
+}

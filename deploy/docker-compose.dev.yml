@@ -1,0 +1,26 @@
+# Local development: Caddy only. The panel runs on the host with `pnpm dev`.
+#   docker compose -f deploy/docker-compose.dev.yml up -d
+# Apps: http://<project>.localhost:8080
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy-dev
+    restart: unless-stopped
+    command: caddy run --resume --config /etc/caddy/Caddyfile --adapter caddyfile
+    ports:
+      - "8080:80"
+      # Admin API reachable from this computer only
+      - "127.0.0.1:2019:2019"
+    volumes:
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile:ro
+      - caddy_dev_data:/data
+      - caddy_dev_config:/config
+    networks: [apps]
+
+volumes:
+  caddy_dev_data:
+  caddy_dev_config:
+
+networks:
+  apps:
+    name: panel-apps

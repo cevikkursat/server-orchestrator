@@ -1,0 +1,11 @@
+# Only for the first start; once the panel connects it loads the whole config itself.
+{
+	admin 0.0.0.0:2019 {
+		origins localhost:2019 127.0.0.1:2019
+	}
+	auto_https off
+}
+
+:80 {
+	respond "Caddy is running; the panel has not loaded its config yet." 200
+}

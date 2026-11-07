@@ -1,0 +1,535 @@
+@import "tailwindcss";
+
+/*
+ * Tasarım sistemi: Gözlemevi yıldız atlası (kurallar: DESIGN.md)
+ * Gece zemini, tek sıcak vurgu (yıldız amberi). Bileşenler rol token'larını kullanır:
+ *   bg-canvas / bg-surface / bg-raised / bg-overlay, border-line / border-line-soft / border-line-strong,
+ *   text-fg / text-muted / text-subtle, accent, success / info / warning / danger.
+ * Eski sınıflar (zinc-*, sky-*, violet-*) de aynı skalaya bağlıdır.
+ */
+@theme {
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* Gece: soğuk mavi-gri. 500 ve üstü kart zemininde >= 4.5:1 okunur */
+  --color-zinc-50: #f5f7fb;
+  --color-zinc-100: #e8ecf6;
+  --color-zinc-200: #d3d9e8;
+  --color-zinc-300: #b4bdd3;
+  --color-zinc-400: #8d98b3;
+  --color-zinc-500: #7783a0;
+  --color-zinc-600: #46557a;
+  --color-zinc-700: #2c3a5c;
+  --color-zinc-800: #1f2a44;
+  --color-zinc-900: #11182b;
+  --color-zinc-950: #0b1020;
+
+  /* Vurgu: yıldız amberi (birincil eylem, seçim, odak, bağlantı, "buraya bak"). sky-* buraya bağlı */
+  --color-sky-200: #fbe3b5;
+  --color-sky-300: #f6cd80;
+  --color-sky-400: #f0b44c;
+  --color-sky-500: #e0a03a;
+  --color-sky-600: #c2852a;
+  --color-sky-700: #9a6720;
+  --color-sky-800: #6e4a18;
+  --color-sky-900: #4a3312;
+  --color-sky-950: #2b1e0b;
+
+  /* Kısıtlı erişim / önizleme gibi "özel" işaretler: soğuk mavi (bilgi tonu) */
+  --color-violet-200: #d6e4ff;
+  --color-violet-300: #b3cdff;
+  --color-violet-400: #8ab4ff;
+  --color-violet-500: #6f9be8;
+  --color-violet-900: #22324f;
+  --color-violet-950: #182338;
+
+  /* Roller */
+  --color-canvas: #0b1020;
+  --color-surface: #0e1426;
+  --color-raised: #11182b;
+  --color-overlay: #151d33;
+  --color-hover: #18213a;
+  --color-line: #1f2a44;
+  --color-line-soft: #18213a;
+  --color-line-strong: #2c3a5c;
+  --color-fg: #e8ecf6;
+  --color-muted: #8d98b3;
+  --color-subtle: #7783a0;
+  --color-faint: #7480a0;
+  --color-accent: #f0b44c;
+  --color-accent-strong: #f0b44c;
+  --color-accent-fg: #0b1020;
+  --color-meter: #c3cbe0;
+  --color-success: #74c69d;
+  --color-info: #8ab4ff;
+  --color-warning: #f0b44c;
+  --color-danger: #e26a5f;
+  --color-special: #8ab4ff;
+  /* Form alanı kenarı: hem kart hem sayfa zemininde >= 3:1 (WCAG 1.4.11) */
+  --color-field-border: #58678c;
+  /* Geri dönüşü olmayan son buton: koyu mercan zemin, açık yazı >= 4.5:1 */
+  --color-danger-solid: #ad4036;
+  --color-danger-solid-hover: #9a382f;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shadow-pop: 0 1px 0 0 rgb(232 236 246 / 0.04) inset, 0 12px 32px -8px rgb(2 4 10 / 0.7), 0 2px 6px -2px rgb(2 4 10 / 0.5);
+}
+
+/* Grafik rolleri: nötr ana seri, soğuk mavi ikinci seri, kritikte mercan */
+:root {
+  --viz-surface: var(--color-raised);
+  --viz-series-1: #c3cbe0;
+  --viz-series-2: #8ab4ff;
+  --viz-grid: #18213a;
+  --viz-axis: #1f2a44;
+  --viz-muted: #7783a0;
+  --viz-critical: #e26a5f;
+  --viz-warning: #f0b44c;
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%238d98b3' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  --select-chevron-hover: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23e8ecf6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  color-scheme: dark;
+  accent-color: var(--color-accent);
+  -webkit-tap-highlight-color: transparent;
+  /* Sabit üst çubuğun altında odaklanan öğe kaybolmasın */
+  scroll-padding-top: 4.5rem;
+}
+
+/* Kaydırma çubukları: ince, gece tonunda; iz şeffaf, tutamak çizgi renginde, üstüne gelince açılır */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-zinc-700) transparent;
+}
+*:hover {
+  scrollbar-color: var(--color-zinc-600) transparent;
+}
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-zinc-700);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-zinc-600);
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  /* Atlas koordinat alanı: yalnız sayfa zemininde, zor seçilen nokta ızgarası */
+  background-color: var(--color-canvas);
+  background-image: radial-gradient(circle, rgb(141 152 179 / 0.1) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+  background-position: 12px 12px;
+  color: var(--color-fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::selection {
+  background: rgb(240 180 76 / 0.3);
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+code,
+pre,
+kbd,
+.font-mono {
+  font-feature-settings: "calt" 0, "liga" 0;
+}
+
+@layer base {
+  /* Klavye odağı her yerde görünür; fare tıklamasında halka çıkmaz */
+  :where(a, button, [role="tab"], [role="button"], summary, input[type="checkbox"], input[type="radio"]):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .input {
+    @apply min-h-11 w-full rounded-md border border-field-border bg-surface px-3 py-2 text-base text-fg outline-none placeholder:text-subtle sm:text-sm md:min-h-10;
+    @apply transition-[border-color,box-shadow] duration-150 ease-out hover:border-zinc-500;
+    @apply focus:border-accent-strong focus:ring-3 focus:ring-accent/20;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger;
+  }
+  /* Açılır liste: yerel ok yerine ince amber çizgili ok; açık listesi aşağıda (base-select) */
+  select.input {
+    @apply cursor-pointer appearance-none bg-no-repeat pr-10;
+    background-image: var(--select-chevron);
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+  }
+  select.input:hover {
+    background-image: var(--select-chevron-hover);
+  }
+
+  /* Butonlar: tek şekil, dört ton. Basınca 0.96 küçülür */
+  .btn,
+  .btn-secondary,
+  .btn-danger,
+  .btn-danger-solid {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3.5 py-2 text-center text-sm font-medium select-none sm:whitespace-nowrap md:min-h-10;
+    @apply transition-[background-color,border-color,color,scale,box-shadow] duration-150 ease-out active:scale-[0.96] motion-reduce:active:scale-100;
+    @apply disabled:pointer-events-none disabled:opacity-60;
+  }
+  .btn {
+    @apply bg-accent font-semibold text-accent-fg hover:bg-sky-300;
+    @apply disabled:bg-zinc-800 disabled:text-muted;
+  }
+  .btn-secondary {
+    @apply border border-line-strong bg-transparent text-fg hover:border-zinc-600 hover:bg-fg/[0.03];
+  }
+  .btn-danger {
+    @apply border border-danger/55 bg-transparent text-danger hover:border-danger/75 hover:bg-danger/[0.06];
+  }
+  .btn-danger-solid {
+    @apply bg-danger-solid text-fg hover:bg-danger-solid-hover;
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2 text-sm text-muted select-none md:min-h-10;
+    @apply transition-[background-color,color,scale] duration-150 ease-out hover:bg-hover hover:text-fg active:scale-[0.96] motion-reduce:active:scale-100;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+  /* Sadece simge: telefonda 44px, masaüstünde 36px dokunma alanı */
+  .btn-icon {
+    @apply inline-grid size-11 shrink-0 place-items-center rounded-md text-muted md:size-9;
+    @apply transition-[background-color,color,scale] duration-150 ease-out hover:bg-hover hover:text-fg active:scale-[0.96] motion-reduce:active:scale-100;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-sm {
+    @apply min-h-11 px-2.5 py-1 text-xs md:min-h-8;
+  }
+  /* Bölümlü seçim (1 saat / 6 saat …): telefonda 44px */
+  .segmented {
+    @apply flex flex-wrap rounded-lg border border-line bg-surface p-0.5 text-sm;
+  }
+  .segmented > button {
+    @apply min-h-11 rounded-md px-3 whitespace-nowrap text-muted transition-colors duration-150 hover:text-fg md:min-h-8;
+  }
+  .segmented > button[aria-checked="true"],
+  .segmented > button[aria-pressed="true"] {
+    @apply bg-accent/[0.09] font-semibold text-accent;
+  }
+  /* Aralık çipleri (1 saat / 6 saat …): küçük, seçili olan amber kenarlı */
+  .chip {
+    @apply inline-flex min-h-11 items-center rounded-md border border-line px-2.5 text-xs font-medium text-muted transition-colors duration-150 hover:text-fg md:min-h-7;
+  }
+  .chip[aria-pressed="true"],
+  .chip[aria-checked="true"] {
+    @apply border-accent/50 bg-accent/[0.07] text-accent;
+  }
+  /* Onay kutusu satırı: dokunma alanı satırın tamamı */
+  .check-row {
+    @apply flex min-h-11 cursor-pointer items-center gap-2.5 text-sm md:min-h-8;
+  }
+
+  .card {
+    @apply rounded-lg border border-line bg-raised p-4 sm:p-5;
+  }
+  /* Kart başlığı: atlas levhası alt yazısı gibi küçük, aralıklı büyük harf + sağda bağlantı */
+  .card-head {
+    @apply flex min-h-[3.25rem] items-center justify-between gap-3 border-b border-line px-4 py-3 sm:px-5;
+  }
+  .cap {
+    @apply text-[11px] leading-4 font-semibold tracking-[0.14em] text-muted uppercase;
+  }
+  .card-link {
+    @apply inline-flex min-h-11 items-center text-xs font-medium text-muted transition-colors duration-150 hover:text-fg md:min-h-8;
+  }
+  /* Durum noktası: dolu = yolunda, içi boş amber = bakılmalı, mercan = acil, gri halka = veri yok */
+  .dot {
+    @apply inline-block size-[7px] shrink-0 rounded-full;
+  }
+  .dot-ok {
+    @apply bg-success;
+  }
+  .dot-info {
+    @apply bg-info;
+  }
+  .dot-look {
+    @apply border-[1.5px] border-warning;
+  }
+  .dot-urgent {
+    @apply border-[1.5px] border-danger;
+  }
+  .dot-urgent-solid {
+    @apply bg-danger;
+  }
+  .dot-none {
+    @apply border-[1.5px] border-faint;
+  }
+  /* Kartın içindeki gruplar: kart içinde kart yerine ayraçlı bölüm */
+  .card-section {
+    @apply border-t border-line pt-4;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-medium text-muted;
+  }
+  .hint {
+    @apply mt-1.5 text-xs text-subtle;
+  }
+  .page-title {
+    @apply text-[22px] leading-7 font-bold tracking-[-0.015em] text-fg sm:text-2xl sm:leading-8;
+  }
+  .page-desc {
+    @apply mt-1 text-sm text-muted;
+  }
+  .section-title {
+    @apply text-sm font-semibold text-fg;
+  }
+  .link {
+    @apply text-accent underline-offset-2 hover:underline;
+  }
+  .kbd {
+    @apply rounded-sm border border-line bg-surface px-1.5 py-0.5 font-mono text-[11px] text-muted;
+  }
+  .skeleton {
+    @apply animate-pulse rounded-md bg-line-soft motion-reduce:animate-none;
+  }
+
+  /* Durum: işaret (nokta / halka / dönen) + yazı; renk tek başına anlam taşımaz.
+   * Yolunda olanın yazısı sakin (fg), işaret renkli; sorunlu olanın yazısı da tonunda. */
+  .status {
+    @apply inline-flex shrink-0 items-center gap-2 text-[13px] leading-5 font-medium whitespace-nowrap;
+  }
+  .status.tone-success {
+    @apply text-fg;
+  }
+  .status.tone-success > :first-child {
+    @apply text-success;
+  }
+  .status.tone-neutral {
+    @apply text-muted;
+  }
+  .status.tone-neutral > :first-child {
+    @apply text-faint;
+  }
+  .status.tone-info {
+    @apply text-info;
+  }
+  .status.tone-warning {
+    @apply text-warning;
+  }
+  .status.tone-danger {
+    @apply text-danger;
+  }
+  .status.tone-special {
+    @apply text-special;
+  }
+  /* Etiket (sistem, birincil, önizleme …): ince çerçeve, dolgu yok */
+  .badge {
+    @apply inline-flex shrink-0 items-center gap-1.5 rounded-sm px-1.5 py-px text-[11px] leading-4 font-semibold tracking-[0.06em] whitespace-nowrap ring-1 ring-inset;
+  }
+  .badge.tone-success {
+    @apply text-success ring-success/35;
+  }
+  .badge.tone-info {
+    @apply text-info ring-info/35;
+  }
+  .badge.tone-warning {
+    @apply text-warning ring-warning/40;
+  }
+  .badge.tone-danger {
+    @apply text-danger ring-danger/40;
+  }
+  .badge.tone-neutral {
+    @apply text-muted ring-line-strong;
+  }
+  .badge.tone-special {
+    @apply text-special ring-special/35;
+  }
+
+  /* Bilgi şeritleri (uyarı, hata, bilgi): ince kenar, tonlu zemin, ikon + metin */
+  .notice {
+    @apply flex items-start gap-3 rounded-lg border p-3.5 text-sm;
+  }
+  .notice-warning {
+    @apply border-warning/30 bg-warning/[0.05] text-warning;
+  }
+  .notice-danger {
+    @apply border-danger/25 bg-danger/[0.06] text-danger;
+  }
+  .notice-info {
+    @apply border-info/25 bg-info/[0.06] text-info;
+  }
+  .notice-special {
+    @apply border-special/25 bg-special/[0.06] text-special;
+  }
+}
+
+code,
+kbd {
+  overflow-wrap: anywhere;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Kaydırılabilir ama çubuğu görünmeyen alanlar (sekme çubukları) */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Telefon: 16px altı yazı kutusuna dokununca iOS sayfayı yakınlaştırır (text-xs vb. olsa da 16px) */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Alt sheet ve pencere girişleri (tek seferlik; hareket azaltılmışsa yok) */
+@keyframes sheet-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+}
+.anim-sheet {
+  animation: sheet-in 220ms var(--ease-out);
+}
+.anim-fade {
+  animation: fade-in 160ms var(--ease-out);
+}
+.anim-pop {
+  animation: pop-in 180ms var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-sheet,
+  .anim-pop {
+    animation: fade-in 120ms linear;
+  }
+}
+
+/*
+ * Açılır listenin kendisi. Destekleyen tarayıcılarda (Chrome/Edge 135+) yerel gri kutu yerine
+ * panelin kartı: gece zemini, ince çizgi, seçili satır amber; desteklemeyenlerde yerel liste
+ * (telefonlarda sistemin seçicisi zaten daha kullanışlı).
+ */
+select.input option {
+  background-color: var(--color-overlay);
+  color: var(--color-fg);
+}
+@supports (appearance: base-select) {
+  select.input,
+  select.input::picker(select) {
+    appearance: base-select;
+  }
+  select.input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-right: 0.75rem;
+    background-image: none;
+  }
+  select.input::picker-icon {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    margin-left: auto;
+    background: var(--select-chevron) center / 1rem no-repeat;
+    transition: rotate 150ms var(--ease-out);
+  }
+  select.input:hover::picker-icon {
+    background-image: var(--select-chevron-hover);
+  }
+  select.input:open {
+    border-color: var(--color-accent);
+  }
+  select.input:open::picker-icon {
+    rotate: 180deg;
+  }
+  select.input::picker(select) {
+    margin-block: 4px;
+    padding: 4px;
+    min-width: anchor-size(width);
+    max-height: min(20rem, 60vh);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-overlay);
+    color: var(--color-fg);
+    box-shadow: var(--shadow-pop);
+  }
+  select.input option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.625rem;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 120ms var(--ease-out);
+  }
+  select.input option:hover,
+  select.input option:focus-visible {
+    background: var(--color-hover);
+    outline: none;
+  }
+  select.input option:checked {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  select.input option::checkmark {
+    order: 1;
+    margin-left: auto;
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--color-accent);
+  }
+  select.input option:disabled {
+    color: var(--color-faint);
+    cursor: not-allowed;
+  }
+  @media (max-width: 639px) {
+    select.input option {
+      min-height: 2.75rem;
+      font-size: 1rem;
+    }
+  }
+}

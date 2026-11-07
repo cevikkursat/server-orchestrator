@@ -1,0 +1,14 @@
+node_modules/
+dist/
+data/
+.env
+*.log
+
+# Sertifika ve özel anahtarlar asla repoya girmesin
+*.key
+*.crt
+*.pem
+*.p12
+
+# Claude Code skill'leri yalnız yerelde (repoya skill konmaz)
+.claude/skills/

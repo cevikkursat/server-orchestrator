@@ -1,0 +1,40 @@
+/** envGroups ekranlarının metinleri (kaynak dil: Türkçe) */
+export default {
+  page: {
+    descriptionBefore: "Birden çok projede kullanılan değerleri (SMTP, API anahtarları…) bir kez tanımlayın; projenin ",
+    descriptionTab: "Ortam değişkenleri",
+    descriptionAfter: " sekmesinden bağlayın.",
+    newGroup: "Yeni grup",
+    emptyTitle: "Henüz grup yok",
+    emptyBody: "Örneğin \"smtp\" adında bir grup açıp SMTP_HOST, SMTP_USER, SMTP_PASS değerlerini girin.",
+  },
+  card: {
+    saved: "Kaydedildi.",
+    savedRedeploy: "Kaydedildi. Bağlı projeler yeniden deploy edilince yeni değerler geçerli olur.",
+    redeployConfirm: {
+      title: "Bağlı projeler yeniden deploy edilsin mi?",
+      confirm: "Deploy et",
+    },
+    redeployStarted_one: "{{count}} proje için deploy başlatıldı.",
+    redeployStarted_other: "{{count}} proje için deploy başlatıldı.",
+    removeConfirm: {
+      title: "\"{{name}}\" grubu silinsin mi?",
+      message: "Bağlı projeler ({{projects}}) bu değerleri bir sonraki deploy'da kaybeder.",
+    },
+    vars_one: " değişken · son değişiklik {{ago}}",
+    vars_other: " değişken · son değişiklik {{ago}}",
+    removeGroup: "Grubu sil",
+    removeNamed: "{{name}} grubunu sil",
+    closeNew: "Yeni grubu kapat",
+    name: "Grup adı",
+    variables: "Değişkenler",
+    create: "Grubu oluştur",
+    empty: "(boş)",
+    noVars: "Bu grupta değişken yok.",
+    usedBy: "Kullanan projeler",
+    unusedBefore: "Henüz hiçbir projeye bağlı değil. Projenin ",
+    unusedTab: "Ortam değişkenleri",
+    unusedAfter: " sekmesinden bağlanır.",
+    redeploy: "Bağlı projeleri yeniden deploy et",
+  },
+} as const;

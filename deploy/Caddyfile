@@ -1,0 +1,20 @@
+# This file is used only on the FIRST start. Once the panel connects it loads the whole
+# config (panel + projects) through the admin API itself; with --resume Caddy also uses
+# the last loaded config after restarts.
+{
+	email {$ACME_EMAIL}
+	admin unix//run/caddy-admin/admin.sock
+}
+
+# The panel's private entry: published on the host only on 127.0.0.1:8080, `tailscale serve` sits in front.
+# Only connections from the host itself (127.0.0.1 / Docker gateways) are accepted;
+# app containers on the same Docker network are refused. The panel is closed to the internet.
+:8080 {
+	@host remote_ip 127.0.0.1/32 ::1/128 172.30.0.1/32 172.31.0.1/32
+	handle @host {
+		reverse_proxy panel.internal:3000 {
+			header_up X-Panel-Entry panel
+		}
+	}
+	respond "Access denied." 403
+}

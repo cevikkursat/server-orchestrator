@@ -1,0 +1,117 @@
+# On the server:  cd /opt/panel/src/deploy && docker compose up -d --build
+# Required variables live in .env (see .env.example)
+#
+# Networks:
+#   panel-internal (172.30.0.0/24): only caddy + panel. The panel trusts X-Forwarded-For
+#                                   only for requests coming from this network.
+#   panel-apps:                     caddy + panel + every app container.
+# Caddy's admin API listens on a shared unix socket only, not on TCP, so app
+# containers cannot change Caddy's config.
+#
+# SELinux (Fedora/RHEL/openSUSE): caddy and panel run with label=disable because they mount
+# host paths (/, docker.sock, the tailscaled socket). It is a no-op where SELinux is off.
+# Never use ':z' on these mounts: it would relabel the host's root filesystem.
+
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    # --resume: starts with the last loaded config (all sites) even while the panel is down
+    command: caddy run --resume --config /etc/caddy/Caddyfile --adapter caddyfile
+    security_opt:
+      - label=disable
+    # Listens ONLY on the host's PUBLIC addresses: tailscaled also uses 443 (on its own 100.x / fd7a:
+    # addresses, for `tailscale serve`). Listening on every address (0.0.0.0) would clash with it.
+    # Without IPv6 it binds to ::1 (loopback), which is harmless.
+    # BIND_IPV4/BIND_IPV6 override the bind address when it differs from the public IP
+    # (e.g. WSL2 in NAT mode: bind to the distro's eth0 address, Windows forwards 80/443 to it).
+    ports:
+      - "${BIND_IPV4:-${PUBLIC_IPV4:?PUBLIC_IPV4 is required in deploy/.env}}:80:80"
+      - "${BIND_IPV4:-${PUBLIC_IPV4}}:443:443"
+      - "${BIND_IPV4:-${PUBLIC_IPV4}}:443:443/udp" # HTTP/3
+      - "[${BIND_IPV6:-${PUBLIC_IPV6:-::1}}]:80:80"
+      - "[${BIND_IPV6:-${PUBLIC_IPV6:-::1}}]:443:443"
+      - "[${BIND_IPV6:-${PUBLIC_IPV6:-::1}}]:443:443/udp"
+      # Tailscale entry: open ONLY to the host itself (not the internet). In front of it sits
+      #   tailscale serve --bg --tcp=443 --proxy-protocol=2 tcp://127.0.0.1:8443
+      # which forwards 443 on the Tailscale addresses here. The panel (.ts.net) and "Tailscale only"
+      # domains are served from here; Caddy learns the device's Tailscale IP from the PROXY header.
+      - "127.0.0.1:8443:8443"
+      # Fallback entry (old installs and SSH tunnels: ssh -L 8080:127.0.0.1:8080 server -> http://localhost:8080)
+      - "127.0.0.1:8080:8080"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_admin:/run/caddy-admin
+      # To get the panel's .ts.net certificate from tailscaled
+      - /var/run/tailscale:/var/run/tailscale
+    networks:
+      internal:
+      apps:
+
+  panel:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: panel
+    restart: unless-stopped
+    security_opt:
+      - label=disable
+    environment:
+      PANEL_DOMAIN: ${PANEL_DOMAIN}
+      # The panel is closed to the internet; Tailscale only (see install.sh). To open it: public
+      PANEL_ACCESS: ${PANEL_ACCESS:-tailscale}
+      WEBHOOK_DOMAIN: ${WEBHOOK_DOMAIN:-}
+      BASE_DOMAIN: ${BASE_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+      PANEL_IN_DOCKER: "true"
+      # The host's public IPs (.env: PUBLIC_IPV4 / PUBLIC_IPV6). Domain DNS checks compare
+      # against these and the Domains page shows them in the DNS instructions.
+      PUBLIC_IP: ${PUBLIC_IPV4},${PUBLIC_IPV6:-}
+      # The host's Tailscale addresses: DNS answers for "Tailscale only" domains
+      TAILSCALE_IPV4: ${TAILSCALE_IPV4:-}
+      TAILSCALE_IPV6: ${TAILSCALE_IPV6:-}
+      HOST_ROOT: /host
+    volumes:
+      - /opt/panel/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Compose projects: SAME path on the host and in the container (relative mounts are passed as host paths)
+      - /opt/panel/compose:/opt/panel/compose
+      - caddy_admin:/run/caddy-admin
+      # Read-only host view: disk usage, network counters, OS name
+      - /:/host:ro
+    networks:
+      internal:
+        # Caddy reaches the panel through this alias; it only resolves on the internal network
+        aliases: [panel.internal]
+      apps:
+    # No web port is published (Caddy only). One exception: DNS for Tailscale devices,
+    # ONLY on the host's Tailscale addresses (closed to the internet). install.sh enables
+    # ip_nonlocal_bind so this also binds at boot before the Tailscale addresses exist.
+    ports:
+      - "${TAILSCALE_IPV4:-127.0.0.1}:53:53/udp"
+      - "${TAILSCALE_IPV4:-127.0.0.1}:53:53/tcp"
+      - "[${TAILSCALE_IPV6:-::1}]:53:53/udp"
+      - "[${TAILSCALE_IPV6:-::1}]:53:53/tcp"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  caddy_admin:
+
+networks:
+  internal:
+    name: panel-internal
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  apps:
+    name: panel-apps
+    # Fixed subnet: its gateway (172.31.0.1) is one of the sources allowed on Caddy's private port
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16

@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  # dockerode'un SSH desteği; kullanmıyoruz, native derleme gereksiz
+  cpu-features: false
+  ssh2: false
+  protobufjs: false

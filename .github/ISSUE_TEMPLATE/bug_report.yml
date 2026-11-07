@@ -1,0 +1,46 @@
+name: Bug report
+description: Something doesn't work as described.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Click …
+        3. See …
+  - type: input
+    id: version
+    attributes:
+      label: Panel version
+      description: Settings → Panel updates shows the current commit.
+      placeholder: e.g. 84addbc
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Host platform
+      options:
+        - Ubuntu
+        - Debian
+        - Fedora
+        - RHEL / Rocky / AlmaLinux
+        - Arch Linux
+        - openSUSE
+        - Windows (WSL2)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant output of `docker logs panel` or the deploy log. Remove secrets, domains and IPs you don't want to share.
+      render: text
